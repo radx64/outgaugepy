@@ -1,15 +1,40 @@
 import socket
 import struct
+import sys
 
-UDP_IP = "127.0.0.1"
-UDP_PORT = 9000
+class OutGaugePacket:
+    def __init__(self, data):
+        (self.time,
+        self.car_name,
+        self.flags,
+        self.gear,
+        self.plid,
+        self.speed,
+        self.rpm,
+        self.turbo,
+        self.eng_temp,
+        self.fuel,
+        self.oil_press,
+        self.oil_temp,
+        self.dash_lights,
+        self.show_lights,
+        self.throttle,
+        self.brake,
+        self.clutch,
+        self.disp1,
+        self.disp2) = struct.unpack('I4shccfffffffIIfff16s16s', data[0:92])
 
-sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-sock.bind((UDP_IP, UDP_PORT))
+class OutGauge:
 
-while True:
-    data, addr = sock.recvfrom(1024) # buffer size is 1024 bytes
-    (time, car_name, flags, gear, plid, speed, rpm,
-    	turbo, eng_temp, fuel, oil_press, oil_temp, dash_lights, show_lights,
-    	throttle, brake, clutch, disp1, disp2) = struct.unpack('I4shccfffffffIIfff16s16s', data[0:92])
-    print ("%.2f %.2f %d - %.0f" % (fuel*100, throttle*100, speed*3.6, rpm))
+    def __init__(self, ip, port, callback):
+        self.ip = ip
+        self.port = port
+        self.callback = callback
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+
+    def connect(self):
+        self.sock.bind((self.ip, self.port))
+        while True:
+            data, addr = self.sock.recvfrom(1024) # buffer size is 1024 bytes
+            packet = OutGaugePacket(data)
+            self.callback(packet)
