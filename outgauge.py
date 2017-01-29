@@ -25,7 +25,6 @@ class OutGaugePacket:
         self.disp2) = struct.unpack('I4shccfffffffIIfff16s16s', data[0:92])
 
 class OutGauge:
-
     def __init__(self, ip, port, callback):
         self.ip = ip
         self.port = port
